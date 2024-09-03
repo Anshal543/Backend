@@ -3,6 +3,7 @@ import { ApiError } from '../utils/apiError.js';
 import { User } from '../models/user.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/apiResponse.js';
+import jwt from 'jsonwebtoken';
 
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -110,12 +111,13 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    // console.log(accessToken);
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false
     }
 
     res
@@ -159,7 +161,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     try {
         const decode = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-        const user = await User.findById(decode.id);
+        const user = await User.findById(decode._id);
 
         if (!user || user?.refreshToken !== incomingRefreshToken) {
             throw new ApiError(401, "Unauthorized");
