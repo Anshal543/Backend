@@ -46,7 +46,10 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    const likedVideos = await Like.find({ likedBy: req.user?._id, video: { $ne: null } })
+    const likedVideos = await Like.find({
+        likedBy: req.user?._id,
+        video: { $exists: true, $ne: null }
+    })
         .populate("video")
         .sort({ createdAt: -1 });
 
